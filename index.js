@@ -3,16 +3,15 @@ const app = express();
 const cors = require('cors');
 const pool = require("./db_pool");
 
-app.use(cors());
+app.use(cors({origin : 'http://localhost:5173'}));
 app.use(express.json());
 
 //ROUTES//
-app.post("/create/:clip_id", async(req, res) => {
-    const {clip_id} = req.params;
+app.post("/create/", async(req, res) => {
+    const {clip_id, description} = req.body;
     
-    if(!checkIfRowExists(clip_id)){
+    if( (await checkIfRowExists(clip_id)) == false){
     try{
-        const {description} = req.body;
         const newClip = await pool.query(
             "INSERT INTO clips (clip_id, description,expire_cnt) VALUES($1, $2, $3) RETURNING *",
             [clip_id, description, 0]);
@@ -41,7 +40,7 @@ async function checkIfRowExists(clipId) {
   }
 }
 
-app.get("/get/:clip_id", async(req, res) => {
+app.get("/:clip_id", async(req, res) => {
     try{
         const {clip_id} = req.params;
         const clip = await pool.query("SELECT * FROM clips WHERE clip_id = $1 ", [clip_id]);
@@ -50,13 +49,13 @@ app.get("/get/:clip_id", async(req, res) => {
             if(clip.rows[0].expire_cnt < 6)
             {
                 await pool.query("UPDATE clips SET expire_cnt = $1 WHERE clip_id = $2", [clip.rows[0].expire_cnt + 1, clip_id]);
-                res.json(clip.rows[0]+1);
+                res.json(clip.rows[0]);
             }else{
                 await pool.query("DELETE FROM clips WHERE clip_id = $1", [clip_id]);
-                res.json({"message" : "Clip expired. Please make a new clip" });
+                res.json({"message" : "Clip expired or does not exist." });
             }
         }else {
-            res.json({"message" : "Clip does not exist." });
+            res.json({"message" : "Clip expired or does not exist." });
         }
     }catch(err){
         console.log(err.message);
@@ -66,8 +65,8 @@ app.get("/get/:clip_id", async(req, res) => {
 
 app.listen(5000, () => {
     console.log("server has started on port 5000....");
-    const currentTime = new Date();
-currentTime.setMinutes(currentTime.getMinutes() + 20);
-console.log(currentTime);
+//     const currentTime = new Date();
+// currentTime.setMinutes(currentTime.getMinutes() + 20);
+// console.log(currentTime);
 
   });
