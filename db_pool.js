@@ -1,6 +1,5 @@
 const Pool = require("pg").Pool;
 
-
 const pool = new Pool({
   user: process.env.R_PG_USER,
   password: process.env.R_PG_PASSWORD,
@@ -9,4 +8,4 @@ const pool = new Pool({
   database: process.env.R_PG_DATABASE
 });
 
-export default pool;
+module.exports = pool;
