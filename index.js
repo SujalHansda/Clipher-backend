@@ -2,8 +2,10 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const pool = require("./db_pool");
+const corsUrl = process.env.LOCAL_CORS_ORIGIN;
+const PORT = parseInt(process.env.PORT, 10) || 5000;
 
-app.use(cors({origin : 'http://localhost:5173'}));
+app.use(cors({origin : corsUrl}));
 app.use(express.json());
 
 //ROUTES//
@@ -63,10 +65,6 @@ app.get("/:clip_id", async(req, res) => {
 })
 
 
-app.listen(5000, () => {
-    console.log("server has started on port 5000....");
-//     const currentTime = new Date();
-// currentTime.setMinutes(currentTime.getMinutes() + 20);
-// console.log(currentTime);
-
+app.listen(PORT, () => {
+    console.log(`server has started on port ${PORT}....`);
   });
